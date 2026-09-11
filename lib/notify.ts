@@ -34,6 +34,44 @@ type Attachment = {
   content: Buffer;
 };
 
+type ContactSummary = {
+  name: string;
+  email: string;
+  phone: string;
+  message: string;
+  smsOptIn: boolean;
+  newsletter: boolean;
+};
+
+export async function notifyNewContact(data: ContactSummary) {
+  const apiKey = process.env.RESEND_API_KEY;
+  const from = process.env.RESEND_FROM;
+  const to = process.env.APPLICATION_NOTIFY_TO;
+  if (!apiKey || !from || !to) return;
+
+  try {
+    const resend = new Resend(apiKey);
+    await resend.emails.send({
+      from,
+      to,
+      subject: `New contact message: ${data.name}`,
+      text: [
+        `Name: ${data.name}`,
+        `Email: ${data.email}`,
+        `Phone: ${data.phone}`,
+        `SMS consent: ${data.smsOptIn ? "yes" : "no"}`,
+        `Newsletter: ${data.newsletter ? "yes" : "no"}`,
+        "",
+        data.message,
+      ].join("\n"),
+    });
+  } catch (err) {
+    console.error("[notify] failed to send contact email", {
+      error: err instanceof Error ? err.message : String(err),
+    });
+  }
+}
+
 export async function notifyNewApplication(data: ApplicationSummary) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM;

@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { cleanText } from "@/lib/sanitize";
 import { isRateLimited } from "@/lib/rateLimit";
 import { clientIp } from "@/lib/clientIp";
+import { notifyNewContact } from "@/lib/notify";
 
 const MAX_BODY_BYTES = 32 * 1024;
 const RATE_LIMIT = 10;
@@ -84,6 +85,8 @@ export async function POST(req: NextRequest) {
         source: "contact",
       },
     });
+
+    await notifyNewContact(data);
 
     return NextResponse.json({ ok: true }, { status: 201 });
   } catch (err) {

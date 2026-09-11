@@ -1,5 +1,5 @@
 /** @jest-environment node */
-import { notifyNewApplication } from "./notify";
+import { notifyNewApplication, notifyNewContact } from "./notify";
 import { readObjectBytes } from "@/lib/storage";
 
 const sendMock = jest.fn().mockResolvedValue({ data: { id: "email_1" } });
@@ -45,6 +45,54 @@ beforeEach(() => {
 
 afterAll(() => {
   process.env = OLD_ENV;
+});
+
+describe("notifyNewContact", () => {
+  it("does nothing when email settings are missing", async () => {
+    delete process.env.RESEND_API_KEY;
+    await notifyNewContact({
+      name: "Kevin Scott",
+      email: "kevinscott.atl1@gmail.com",
+      phone: "01278410487",
+      message: "i need load in dallas texas",
+      smsOptIn: false,
+      newsletter: false,
+    });
+    expect(sendMock).not.toHaveBeenCalled();
+  });
+
+  it("sends a contact notification with details", async () => {
+    await notifyNewContact({
+      name: "Kevin Scott",
+      email: "kevinscott.atl1@gmail.com",
+      phone: "01278410487",
+      message: "i need load in dallas texas",
+      smsOptIn: false,
+      newsletter: true,
+    });
+
+    expect(sendMock).toHaveBeenCalledTimes(1);
+    const call = sendMock.mock.calls[0][0];
+    expect(call.to).toBe("owner@gmail.com");
+    expect(call.subject).toBe("New contact message: Kevin Scott");
+    expect(call.text).toContain("Kevin Scott");
+    expect(call.text).toContain("i need load in dallas texas");
+    expect(call.text).toContain("Newsletter: yes");
+  });
+
+  it("does not throw when the email API fails", async () => {
+    sendMock.mockRejectedValueOnce(new Error("rate limited"));
+    await expect(
+      notifyNewContact({
+        name: "Kevin Scott",
+        email: "kevinscott.atl1@gmail.com",
+        phone: "01278410487",
+        message: "hi",
+        smsOptIn: false,
+        newsletter: false,
+      })
+    ).resolves.toBeUndefined();
+  });
 });
 
 describe("notifyNewApplication", () => {
