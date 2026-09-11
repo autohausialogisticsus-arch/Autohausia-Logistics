@@ -1,5 +1,8 @@
 import { Resend } from "resend";
-import { objectUrl } from "@/lib/storage";
+import { objectUrl, readObjectBytes } from "@/lib/storage";
+
+const MAX_ATTACH_BYTES = 8 * 1024 * 1024; // 8 MB per file
+const MAX_TOTAL_ATTACH_BYTES = 25 * 1024 * 1024; // Resend limits ~40 MB/email
 
 type DocumentSummary = {
   kind: string;
@@ -26,6 +29,11 @@ type ApplicationSummary = {
   documents?: DocumentSummary[];
 };
 
+type Attachment = {
+  filename: string;
+  content: Buffer;
+};
+
 export async function notifyNewApplication(data: ApplicationSummary) {
   const apiKey = process.env.RESEND_API_KEY;
   const from = process.env.RESEND_FROM;
@@ -50,11 +58,29 @@ export async function notifyNewApplication(data: ApplicationSummary) {
   ].filter((l): l is string => l !== null);
 
   const docs = data.documents ?? [];
+
+  // Download the uploaded documents so they arrive as email attachments.
+  const attachments: Attachment[] = [];
+  let totalBytes = 0;
+  const linesWithUrls = [...lines];
+
+  for (const doc of docs) {
+    if (attachments.length < 10 && totalBytes < MAX_TOTAL_ATTACH_BYTES) {
+      const file = await readObjectBytes(doc.objectKey, MAX_ATTACH_BYTES);
+      if (file) {
+        attachments.push({ filename: doc.filename, content: file.data });
+        totalBytes += file.data.length;
+      }
+    }
+  }
+
   if (docs.length > 0) {
-    lines.push("", "Documents:");
+    linesWithUrls.push("", "Documents:");
     for (const doc of docs) {
       const url = objectUrl(doc.objectKey);
-      lines.push(`  - ${doc.kind}: ${doc.filename}${url ? ` (${url})` : ""}`);
+      linesWithUrls.push(
+        `  - ${doc.kind}: ${doc.filename}${url ? ` (${url})` : ""}`
+      );
     }
   }
 
@@ -64,7 +90,8 @@ export async function notifyNewApplication(data: ApplicationSummary) {
       from,
       to,
       subject: `New carrier application: ${data.firstName} ${data.lastName}`,
-      text: lines.join("\n"),
+      text: linesWithUrls.join("\n"),
+      ...(attachments.length > 0 ? { attachments } : {}),
     });
   } catch (err) {
     // A notification failure must never fail the application submission.

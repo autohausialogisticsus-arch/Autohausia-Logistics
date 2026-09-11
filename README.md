@@ -83,6 +83,21 @@ Replace:
 > (`/api/contact`, `/api/application`, `/api/application/upload-url`) for the
 > forms. Deploying to a serverless host (Vercel) is required.
 
+## 8. Admin dashboard (view leads)
+
+Submissions from the contact form and carrier application are stored in the
+`Lead` table. They can be viewed in the Supabase **Table Editor**, or on the
+site itself at **`/admin`**:
+
+1. Set a strong `ADMIN_PASSWORD` (8+ characters) in your Vercel env vars.
+   Leave it empty to keep the dashboard disabled.
+2. Visit `https://yourdomain.com/admin`, sign in with that password, and you'll
+   see the 200 most recent leads with their uploaded documents (linked to
+   storage). Use **Sign out** when done.
+
+The dashboard is hidden from search engines and never linked in the site's
+navigation.
+
 ## Project structure
 
 ```

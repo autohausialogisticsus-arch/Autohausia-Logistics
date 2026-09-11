@@ -1,4 +1,9 @@
-import { S3Client, HeadObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  GetObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import {
   type DocumentKind,
@@ -119,6 +124,28 @@ export async function proveObjectExists(key: string): Promise<boolean> {
     return true;
   } catch {
     return false;
+  }
+}
+
+export async function readObjectBytes(
+  key: string,
+  maxBytes: number
+): Promise<{ data: Buffer; contentType: string } | null> {
+  if (!isStorageConfigured()) return null;
+  try {
+    const res = await getClient().send(
+      new GetObjectCommand({ Bucket: bucket, Key: key })
+    );
+    const contentLength = Number(res.ContentLength ?? 0);
+    if (!res.Body || contentLength < 1 || contentLength > maxBytes) return null;
+    const bytes = await res.Body.transformToByteArray();
+    if (bytes.length < 1 || bytes.length > maxBytes) return null;
+    return {
+      data: Buffer.from(bytes),
+      contentType: res.ContentType ?? "application/octet-stream",
+    };
+  } catch {
+    return null;
   }
 }
 
