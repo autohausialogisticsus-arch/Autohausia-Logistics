@@ -1,0 +1,138 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-display: 'Oswald', sans-serif;
+  --font-body: 'Inter', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+/* Prevent horizontal overflow site-wide.
+   `clip` (not `hidden`) is used so the sticky header keeps working —
+   `hidden` turns body into a scroll container and breaks position: sticky. */
+html,
+body {
+  overflow-x: clip;
+  max-width: 100vw;
+}
+
+:focus-visible {
+  outline: 2px solid #F2A71B;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+body {
+  @apply bg-white text-slate font-body;
+}
+
+/* Ensure form inputs and textareas don't overflow on mobile */
+input,
+textarea,
+select {
+  min-width: 0;
+}
+
+/* Route-line divider: the site's signature motif — a dashed highway
+   lane line that runs between major sections, echoing a dispatch route. */
+.route-divider {
+  position: relative;
+  height: 64px;
+}
+.route-divider::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 6%;
+  right: 6%;
+  height: 3px;
+  background: repeating-linear-gradient(
+    90deg,
+    #F2A71B 0px,
+    #F2A71B 40px,
+    rgba(242, 167, 27, 0.25) 40px,
+    rgba(242, 167, 27, 0.25) 64px,
+    transparent 64px,
+    transparent 88px
+  );
+  transform: translateY(-50%);
+  opacity: 0.85;
+}
+/* end-cap dashes so the line reads as a true highway lane, not a flat rule */
+.route-divider::after {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 6%;
+  right: 6%;
+  transform: translateY(-50%);
+  box-shadow: inset 0 -1px 0 rgba(242, 167, 27, 0.15);
+}
+
+/* Ambient dark-surface texture — a clear grid + a warm "dispatch beacon"
+   radial glow. Layered as ::before/::after on a `relative overflow-hidden`
+   container, or placed behind content. */
+.ambient-dark {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.ambient-dark::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  background-image: linear-gradient(rgba(255, 255, 255, 0.13) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.13) 1px, transparent 1px);
+  background-size: 44px 44px;
+  pointer-events: none;
+}
+.ambient-dark::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: radial-gradient(
+    900px 560px at 80% 0%,
+    rgba(242, 167, 27, 0.28) 0%,
+    rgba(242, 167, 27, 0.08) 45%,
+    transparent 75%
+  );
+  pointer-events: none;
+}
+
+/* Hairline (1px) section divider, softer than the page border. */
+.section-hairline {
+  border-top: 1px solid #DCE1E8;
+}
+
+@media print {
+  header,
+  footer {
+    display: none !important;
+  }
+
+  body {
+    background: #fff !important;
+  }
+
+  a {
+    color: #0B1220 !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

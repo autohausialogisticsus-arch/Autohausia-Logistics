@@ -1,0 +1,71 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Lead {
+  id               String     @id @default(cuid())
+  name             String?
+  firstName        String?
+  lastName         String?
+  company          String?
+  email            String
+  phone            String
+  mcNumber         String?
+  usdotNumber      String?
+  equipmentType    String?
+  truckCount       Int?
+  currentLocation  String?
+  preferredLanes   String?
+  preferredRegions String?
+  homeTime         String?
+  message          String
+  smsOptIn         Boolean    @default(false)
+  consentTimestamp DateTime?
+  newsletter       Boolean    @default(false)
+  source           String     @default("contact")
+  status           LeadStatus @default(NEW)
+  documents        ApplicationDocument[]
+  createdAt        DateTime   @default(now())
+  updatedAt        DateTime   @updatedAt
+}
+
+model ApplicationDocument {
+  id          String   @id @default(cuid())
+  leadId      String
+  kind        String
+  objectKey   String
+  filename    String
+  contentType String
+  size        Int
+  lead        Lead     @relation(fields: [leadId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+
+  @@index([leadId])
+}
+
+model RateLimit {
+  key       String   @id
+  count     Int
+  resetAt   DateTime
+  updatedAt DateTime @updatedAt
+}
+
+enum LeadStatus {
+  NEW
+  CONTACTED
+  QUALIFIED
+  NOT_QUALIFIED
+  CONVERTED
+}
+
+model Testimonial {
+  id      String @id @default(cuid())
+  quote   String
+  author  String
+  company String?
+}

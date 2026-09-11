@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="120" viewBox="0 0 200 120" fill="none">
+  <rect x="40" y="56" width="150" height="8" rx="2" fill="#0B1220"/>
+  <circle cx="28" cy="88" r="10" fill="#0B1220"/>
+  <circle cx="138" cy="92" r="11" fill="#0B1220"/>
+  <circle cx="162" cy="92" r="11" fill="#0B1220"/>
+  <path d="M40 56 L34 44 L66 44 L74 56 Z" fill="#0B1220"/>
+  {[58, 78, 98, 118, 138, 158].map((x) => <rect key={x} x={x} y={64} width={3} height={14} fill="#0B1220" opacity={0.6}/>)}
+  <path d="M28 88 L22 76 L34 76 L28 88" fill="#0B1220"/>
+  <path d="M138 92 L132 80 L144 80 L138 92" fill="#0B1220"/>
+  <path d="M162 92 L156 80 L168 80 L162 92" fill="#0B1220"/>
+</svg>
